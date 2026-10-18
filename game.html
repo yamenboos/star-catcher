@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>اصطد النجوم</title>
+<style>
+:root{--bg:#f4f1ff;--fg:#1d1b3a;--card:#ffffff;--accent:#6c4cf5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#14122b;--fg:#f1eeff;--card:#221f45;--accent:#a592ff}}
+:root[data-theme="dark"]{--bg:#14122b;--fg:#f1eeff;--card:#221f45;--accent:#a592ff}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;display:flex;flex-direction:column;align-items:center;overflow:hidden;user-select:none;-webkit-user-select:none}
+header{display:flex;gap:12px;margin:16px 0 8px;font-size:18px}
+header div{background:var(--card);padding:8px 16px;border-radius:14px}
+#area{position:relative;flex:1;width:min(100%,520px);margin:8px;background:var(--card);border-radius:20px;overflow:hidden;touch-action:manipulation}
+.star{position:absolute;font-size:44px;cursor:pointer;animation:pop .25s ease-out}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+#msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;background:var(--card);z-index:2;padding:20px}
+#msg h1{margin:0;font-size:28px}
+button{font:inherit;font-size:20px;background:var(--accent);color:#fff;border:0;border-radius:14px;padding:12px 32px;cursor:pointer}
+</style>
+</head>
+<body>
+<header><div>⭐ <span id="score">0</span></div><div>⏱ <span id="time">30</span></div></header>
+<div id="area">
+  <div id="msg"><h1>اصطد النجوم ⭐</h1><p id="info">اضغط على النجوم بأسرع ما تقدر خلال 30 ثانية</p><button id="go">ابدأ</button></div>
+</div>
+<script>
+let score=0,time=30,best=0,tick,spawn;
+try{best=+localStorage.getItem("best")||0}catch(e){}
+const area=document.getElementById("area"),msg=document.getElementById("msg");
+const $=id=>document.getElementById(id);
+function addStar(){
+  const s=document.createElement("div");
+  s.className="star";
+  s.textContent=Math.random()<.15?"🌟":"⭐";
+  const w=area.clientWidth-60,h=area.clientHeight-60;
+  s.style.left=Math.random()*w+"px";
+  s.style.top=Math.random()*h+"px";
+  const pts=s.textContent==="🌟"?5:1;
+  s.onpointerdown=()=>{score+=pts;$("score").textContent=score;s.remove()};
+  area.appendChild(s);
+  setTimeout(()=>s.remove(),1200);
+}
+function start(){
+  score=0;time=30;$("score").textContent=0;$("time").textContent=30;
+  msg.style.display="none";
+  spawn=setInterval(addStar,450);
+  tick=setInterval(()=>{
+    $("time").textContent=--time;
+    if(time<=0)end();
+  },1000);
+}
+function end(){
+  clearInterval(tick);clearInterval(spawn);
+  area.querySelectorAll(".star").forEach(s=>s.remove());
+  if(score>best){best=score;try{localStorage.setItem("best",best)}catch(e){}}
+  $("info").textContent="نتيجتك: "+score+" — أعلى نتيجة: "+best;
+  msg.querySelector("h1").textContent="خلص الوقت! 🎉";
+  $("go").textContent="العب مرة ثانية";
+  msg.style.display="flex";
+}
+$("go").onclick=start;
+</script>
+</body>
+</html>
